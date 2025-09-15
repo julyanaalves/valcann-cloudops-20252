@@ -1,0 +1,123 @@
+%%{init: {"flowchart": {"htmlLabels": true}}}%%
+graph TB
+
+%% ===== Repositório e Fluxo de Git =====
+subgraph "Código Fonte (Git)"
+  DEV["Developer"]
+  REPO["Repo Git<br>branches: feature/develop/main"]
+  DEV --> REPO
+end
+
+%% ===== Integração Contínua (CI) =====
+subgraph "CI: Build, Test, Quality"
+  LINT["<i class='fa fa-check'></i> Lint/Typecheck"]
+  TEST["<i class='fa fa-flask'></i> Unit/Integration"]
+  BUILD_FE["<i class='fa fa-cogs'></i> Build FE"]
+  BUILD_BE["<i class='fa fa-cogs'></i> Build BE"]
+  SCAN["<i class='fa fa-search'></i> SCA/Sonar"]
+end
+
+REPO --> LINT
+REPO --> TEST
+REPO --> BUILD_FE
+REPO --> BUILD_BE
+REPO --> SCAN
+
+%% ===== Empacotamento e Imagens =====
+subgraph "Empacotamento"
+  DOCKER_FE["<i class='fa fa-cubes'></i> Docker FE (Nginx)"]
+  DOCKER_BE["<i class='fa fa-cubes'></i> Docker BE (Node)"]
+  TAGS["<i class='fa fa-tags'></i> Tags: SHA/semver"]
+end
+
+BUILD_FE --> DOCKER_FE
+BUILD_BE --> DOCKER_BE
+DOCKER_FE --> TAGS
+DOCKER_BE --> TAGS
+
+subgraph "Registry de Imagens"
+  REGISTRY[("<i class='fa fa-database'></i> Registry")]
+end
+
+TAGS --> REGISTRY
+
+%% ===== Deploy Homologação (Automático) =====
+subgraph "Homologação / Staging"
+  direction TB
+  DEPLOY_STG["<i class='fa fa-rocket'></i> Deploy Staging<br>(Helm/Ansible)"]
+  MIGRATE_STG["<i class='fa fa-database'></i> Migrações DB (Stg)"]
+  APP_STG["<i class='fa fa-server'></i> App Staging"]
+  TEST_E2E["<i class='fa fa-check-circle'></i> Smoke/E2E"]
+end
+
+REGISTRY --> DEPLOY_STG
+DEPLOY_STG --> MIGRATE_STG
+MIGRATE_STG --> APP_STG
+APP_STG --> TEST_E2E
+
+%% ===== Gate de Aprovação =====
+APPROVAL[["<i class='fa fa-check-circle'></i> Aprovação Manual<br>Checklist KPIs"]]
+TEST_E2E --> APPROVAL
+
+%% ===== Deploy Produção (Promoção de Imagem) =====
+subgraph "Produção"
+  direction TB
+  PROMOTE["<i class='fa fa-rocket'></i> Promover mesma imagem"]
+  DEPLOY_BG["<i class='fa fa-random'></i> Blue/Green ou Canary"]
+  MIGRATE_PROD["<i class='fa fa-database'></i> Migrações DB (Prod)"]
+  APP_BLUE["<i class='fa fa-server'></i> App Azul (atual)"]
+  APP_GREEN["<i class='fa fa-server'></i> App Verde (nova)"]
+  SWITCH["<i class='fa fa-exchange'></i> Switch Tráfego"]
+  ROLLBACK["<i class='fa fa-undo'></i> Rollback"]
+end
+
+APPROVAL --> PROMOTE
+PROMOTE --> DEPLOY_BG
+DEPLOY_BG --> MIGRATE_PROD
+MIGRATE_PROD --> APP_GREEN
+APP_GREEN --> SWITCH
+APP_BLUE -.-> ROLLBACK
+
+%% ===== Observabilidade =====
+subgraph "Observabilidade"
+  APM["<i class='fa fa-line-chart'></i> APM/Tracing (OTel)"]
+  METRICS["<i class='fa fa-bar-chart'></i> Métricas (Prom/Grafana)"]
+  LOGS["<i class='fa fa-file-text-o'></i> Logs (ELK/Loki)"]
+end
+
+APP_STG -.-> APM
+APP_STG -.-> METRICS
+APP_STG -.-> LOGS
+
+APP_GREEN -.-> APM
+APP_GREEN -.-> METRICS
+APP_GREEN -.-> LOGS
+
+%% ===== Notificações =====
+NOTIFY["<i class='fa fa-bell'></i> Slack ou Teams"]
+TEST_E2E -.-> NOTIFY
+APPROVAL -.-> NOTIFY
+DEPLOY_BG -.-> NOTIFY
+
+%% ===== Estilos =====
+classDef code fill:#cde4ff,stroke:#6699ff,stroke-width:2px
+classDef ci fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+classDef pkg fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+classDef reg fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+classDef env fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+classDef obs fill:#f8cecc,stroke:#b85450,stroke-width:2px
+classDef comm fill:#f2f2f2,stroke:#999
+
+class DEV,REPO code
+class LINT,TEST,BUILD_FE,BUILD_BE,SCAN ci
+class DOCKER_FE,DOCKER_BE,TAGS pkg
+class REGISTRY reg
+class APPROVAL,DEPLOY_STG,MIGRATE_STG,APP_STG,TEST_E2E,PROMOTE,DEPLOY_BG,MIGRATE_PROD,APP_BLUE,APP_GREEN,SWITCH,ROLLBACK env
+class APM,METRICS,LOGS obs
+class NOTIFY comm
+
+%% ===== Notas =====
+subgraph "Notas"
+  NOTE_BG["<i class='fa fa-info-circle'></i> Blue/Green: Azul = versão atual; Verde = nova versão em paralelo validada antes do switch."]
+  NOTE_CANARY["<i class='fa fa-info-circle'></i> Canary: rollout gradual (ex.: 5% → 25% → 50% → 100%) com monitoramento e rollback fácil."]
+end

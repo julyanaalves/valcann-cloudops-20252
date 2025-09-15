@@ -1,0 +1,112 @@
+---
+id: ab618492-9282-4c45-9ffa-e344aa1ea2bd
+title: Arquitetura de Monitoramento e Performance
+---
+graph LR
+
+%% ===================== Camadas =====================
+subgraph "Clientes e Borda"
+  direction LR
+  User["<i class='fa fa-user'></i> Usuários Finais"]
+  CDN["<i class='fa fa-cloud'></i> CDN / Edge Cache"]
+  User --> CDN
+end
+
+subgraph "Entrada"
+  LB["<i class='fa fa-server'></i> Load Balancer"]
+end
+
+CDN --> LB
+
+subgraph "Aplicação (Backend)"
+  direction LR
+  App1["<i class='fa fa-cogs'></i> App Server 1<br>[Agente APM]"]
+  App2["<i class='fa fa-cogs'></i> App Server 2<br>[Agente APM]"]
+  App3["<i class='fa fa-cogs'></i> App Server 3<br>[Agente APM]"]
+  App4["<i class='fa fa-cogs'></i> App Server 4<br>[Agente APM]"]
+end
+
+LB --> App1
+LB --> App2
+LB --> App3
+LB --> App4
+
+subgraph "Camada de Cache"
+  Redis["<i class='fa fa-database'></i> Redis / Cache de Dados"]
+end
+
+subgraph "Banco de Dados"
+  direction LR
+  DB_Master["<i class='fa fa-database'></i> DB Master (Escrita)"]
+  DB_Replica["<i class='fa fa-database'></i> DB Replica (Leitura)"]
+  DB_Master -- "Replicação" --> DB_Replica
+end
+
+%% Fluxo principal (App -> Cache/DB)
+App1 --> Redis
+App2 --> Redis
+App3 --> Redis
+App4 --> Redis
+
+App1 --> DB_Master
+App2 --> DB_Master
+App3 --> DB_Master
+App4 --> DB_Master
+
+App1 --> DB_Replica
+App2 --> DB_Replica
+App3 --> DB_Replica
+App4 --> DB_Replica
+
+%% ===================== Observabilidade =====================
+subgraph "Observabilidade (Monitoramento e Diagnóstico)"
+  direction TB
+  APM["<i class='fa fa-chart-line'></i> APM + Tracing (OpenTelemetry) + Logs Centralizados"]
+  METRICS["<i class='fa fa-area-chart'></i> Métricas (Prometheus/Grafana)"]
+  DB_Mon["<i class='fa fa-search'></i> Monitoramento DB\n(pg_stat_statements, locks, EXPLAIN)"]
+  RUM["<i class='fa fa-tasks'></i> RUM / Sintético (Web Vitals: LCP, FID, TTFB)"]
+end
+
+%% Ligações de observabilidade (pontilhadas)
+App1 -.-> APM
+App2 -.-> APM
+App3 -.-> APM
+App4 -.-> APM
+
+App1 -.-> METRICS
+App2 -.-> METRICS
+App3 -.-> METRICS
+App4 -.-> METRICS
+
+Redis -.-> METRICS
+DB_Master -.-> DB_Mon
+DB_Replica -.-> DB_Mon
+
+RUM -.-> CDN
+RUM -.-> LB
+
+%% ===================== Anotações de Métricas-Chave =====================
+APP_NOTE["p95/p99 por endpoint, erros, threads ativas, fila, pool conexões DB"]
+DB_NOTE["Top queries (tempo total, média, p95), waits/locks, replication lag"]
+CACHE_NOTE["Hit ratio, tamanho de chaves, TTL, evictions, stampede"]
+
+classDef note fill:#f2f2f2,stroke:#999,stroke-dasharray: 3 3
+classDef user fill:#cde4ff,stroke:#6699ff,stroke-width:2px
+classDef edge fill:#cde4ff,stroke:#6699ff,stroke-width:2px
+classDef app fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+classDef cache fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+classDef db fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+classDef obs fill:#f8cecc,stroke:#b85450,stroke-width:2px
+
+class APP_NOTE,DB_NOTE,CACHE_NOTE note
+class User user
+class CDN,LB edge
+class App1,App2,App3,App4 app
+class Redis cache
+class DB_Master,DB_Replica db
+class APM,METRICS,DB_Mon,RUM obs
+
+%% Anexar notas a nós relevantes
+App2 --- APP_NOTE
+DB_Master --- DB_NOTE
+Redis --- CACHE_NOTE

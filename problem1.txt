@@ -1,0 +1,1 @@
+A seguir, apresento um script em Python que automatiza o processo de gerenciamento de backups. O código foi desenvolvido para ser robusto e configurável, cumprindo todos os requisitos solicitados: listar arquivos, remover os que possuem data de criação superior a 3 dias, copiar os mais recentes e gerar os logs correspondentes.

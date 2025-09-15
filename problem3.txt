@@ -1,0 +1,34 @@
+Solução do Problema 3: Aplicações e Desenvolvimento de Software
+Esta análise detalha as ações e ferramentas para automatizar o processo de build e deploy de uma aplicação, conforme solicitado, transformando um fluxo manual em um pipeline de CI/CD (Continuous Integration/Continuous Deployment) moderno, ágil e seguro. A solução segue a estrutura de Problema > Causa > Solução.
+
+Problema
+A empresa possui uma aplicação com backend em Node.JS e frontend em React cujo processo de lançamento de novas versões é inteiramente manual. Para cada atualização, a equipe precisa primeiro empacotar manualmente todos os componentes de frontend e backend para então realizar o deploy no ambiente de homologação. Após um ciclo de uma semana de validações, um novo empacotamento manual é realizado antes da atualização do ambiente de produção. Este fluxo é lento, propenso a erros humanos e consome um tempo valioso da equipe de desenvolvimento.
+
+Causa
+A causa raiz do problema é a ausência total de um pipeline de automação (CI/CD) e de uma cultura DevOps. Essa carência resulta em várias ineficiências e riscos críticos:
+Processo Manual e Sujeito a Erros: A intervenção humana em cada etapa pode introduzir inconsistências e falhas que são difíceis de rastrear e depurar.
+Ciclo de Feedback Lento: O intervalo de uma semana entre o deploy de homologação e produção atrasa a entrega de valor aos clientes e a capacidade de corrigir bugs rapidamente.
+Falta de Padronização: A ausência de um processo repetível pode levar a diferenças de configuração entre os ambientes de homologação e produção, resultando em comportamentos inesperados da aplicação.
+
+Solução
+A solução é a implementação de um ecossistema de entrega de software automatizado, que abrange desde a submissão do código até o deploy em produção. A estratégia é dividida em cinco pilares fundamentais para garantir qualidade, velocidade e segurança.
+
+1. Fundação: Pipeline de CI/CD e Containerização
+Ação: Centralizar o código em um repositório Git e criar um pipeline automatizado com uma ferramenta como GitHub Actions ou GitLab CI. Para garantir consistência entre todos os ambientes, vamos containerizar a aplicação com Docker, criando imagens separadas para o frontend (React servido por Nginx) e o backend (Node.js).
+Resultado: Cada alteração no código dispara automaticamente o build, os testes e a criação de um artefato (imagem Docker) versionado e imutável, pronto para deploy.
+
+2. Qualidade Automatizada e Contínua
+Ação: Integrar diretamente no pipeline etapas de verificação de qualidade. Isso inclui testes unitários e de integração automatizados, análise estática de código com linters (ESLint) e verificação de dependências vulneráveis.
+Resultado: O pipeline atua como um “guardião da qualidade’, bloqueando automaticamente qualquer código que não atenda aos critérios mínimos antes de ser implantado.
+
+3. Consistência de Ambientes com Infraestrutura como Código (IaC)
+Ação: Para eliminar o problema de "funciona na minha máquina", os ambientes de homologação e produção serão provisionados e gerenciados via Infraestrutura como Código com ferramentas como Terraform ou Ansible.
+Resultado: Os ambientes se tornam idênticos e reprodutíveis, eliminando bugs que só aparecem em produção devido a diferenças de configuração.
+
+4. Deploys Seguros e Confiáveis
+Ação: O deploy em homologação será totalmente automático após o sucesso do CI. O deploy em produção exigirá uma aprovação manual para manter o controle de negócios. Utilizaremos uma estratégia de deploy segura como Blue-Green para permitir atualizações sem tempo de inatividade e com capacidade de rollback instantâneo.
+Resultado: O risco de um deploy impactar negativamente os usuários é drasticamente reduzido.
+
+5. Gerenciamento Automatizado do Banco de Dados
+Ação: As migrações de esquema do banco de dados serão gerenciadas com uma ferramenta de migração (ex: Prisma Migrate, TypeORM) e executadas como uma etapa automatizada e idempotente dentro do pipeline de deploy.
+Resultado: O banco de dados evolui de forma sincronizada e segura com a aplicação, evitando falhas de deploy.

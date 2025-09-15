@@ -1,0 +1,46 @@
+Solução do Problema 2: Monitoramento e Performance
+A análise a seguir apresenta um plano detalhado para diagnosticar e resolver um problema complexo de lentidão em uma aplicação web, conforme solicitado. A abordagem segue a estrutura de Problema > Causa > Solução e é projetada para identificar gargalos que não são aparentes em um monitoramento superficial de infraestrutura.
+
+Problema
+Um cliente relata lentidão contínua em uma de suas principais aplicações web. A infraestrutura é composta por 4 servidores de aplicação e 2 servidores de banco de dados em um esquema de replicação (um nó de escrita e um de leitura). Uma análise preliminar dos indicadores de monitoramento, como uso de CPU e memória, não revelou qualquer sinal de sobrecarga ou pico de utilização nos servidores. Apesar da aparente saúde da infraestrutura, a aplicação continua lenta para os usuários finais.
+
+Causa (Plano de Diagnóstico)
+O fato de os recursos de infraestrutura estarem normalizados sugere que a causa raiz da lentidão é um gargalo de performance mais sutil. Proponho um plano de diagnóstico sistemático e end-to-end, investigando o sistema em quatro camadas críticas:
+
+1. Camada de Frontend (Experiência Real do Usuário - RUM)
+A investigação deve começar na ponta, onde a lentidão é percebida. O objetivo é quantificar a experiência do usuário.
+O que investigar: Em vez de suposições, mediremos a performance real no navegador. Analisaremos métricas de Core Web Vitals (LCP, FID, CLS) para entender se a lentidão vem do carregamento de ativos pesados (imagens, JS), da renderização da página ou de scripts ineficientes.
+Ferramentas: Google Lighthouse, DevTools do navegador e, idealmente, uma ferramenta de RUM (Real User Monitoring) para coletar métricas de performance de usuários reais.
+
+
+2. Camada de Aplicação (Backend)
+Esta é a camada mais provável para gargalos lógicos. Uma análise profunda do comportamento da aplicação é essencial.
+O que investigar:
+Latência de Cauda Longa (p95/p99): A latência média pode mascarar problemas. Analisar os percentis 95 e 99 revela a experiência dos usuários mais afetados, que é onde os problemas de performance se tornam mais visíveis.
+Queries N+1: Usando Distributed Tracing (Rastreamento Distribuído), podemos identificar padrões ineficientes de acesso a dados, como uma query que é executada repetidamente dentro de um loop, quando poderia ser substituída por uma única consulta mais eficiente.
+Ferramentas: Implementação de uma solução de APM (Application Performance Monitoring) como Datadog, New Relic ou uma stack open-source com OpenTelemetry e Jaeger.
+
+3. Camada de Banco de Dados
+Mesmo com baixo uso de CPU, o banco de dados pode ser a fonte da lentidão por razões lógicas.
+O que investigar:
+Pool de Conexões: Um esgotamento do pool de conexões com o banco de dados fará com que a aplicação espere por uma conexão disponível, causando lentidão geral sem sobrecarregar o banco.
+Locks e Waits: Analisar a existência de transações que geram bloqueios (locks) em tabelas ou registros por tempo excessivo, criando uma "fila" de operações.
+Plano de Execução de Queries: Usar EXPLAIN ANALYZE nas consultas mais frequentes para garantir que elas estejam utilizando índices e não realizando varreduras completas e ineficientes na tabela (full table scans).
+Ferramentas: Logs de Slow Query do banco, painéis de monitoramento do banco e o comando EXPLAIN ANALYZE.
+
+
+4. Camada de Dependências Externas
+Aplicações modernas raramente operam isoladamente. A lentidão pode ser causada por serviços de terceiros.
+O que investigar: O tempo de resposta de APIs externas (ex: gateways de pagamento, serviços de autenticação, etc.). Um timeout mal configurado ou uma falha em um desses serviços pode paralisar as requisições na nossa aplicação.
+Ferramentas: As mesmas ferramentas de APM e Distributed Tracing são perfeitas para visualizar o tempo gasto em chamadas externas e identificar qual dependência está lenta.
+
+Solução
+A solução será direcionada pela causa raiz identificada no diagnóstico. As ações podem incluir:
+Causa no Frontend: Otimizar imagens e scripts e implementar uma CDN (Content Delivery Network) para acelerar a entrega de ativos estáticos.
+Causa na Aplicação:
+Refatorar o código para eliminar gargalos, como o problema de N+1 queries.
+Implementar um Cache em Memória (ex: Redis) para armazenar resultados de operações custosas e reduzir a carga no banco de dados.
+Para dependências externas, implementar o padrão Circuit Breaker, que impede que a aplicação continue tentando chamar um serviço que está falhando, melhorando a resiliência do sistema.
+Causa no Banco de Dados:
+Otimizar ou criar índices para acelerar as consultas lentas.
+Ajustar o tamanho do pool de conexões na aplicação para atender à demanda sem gerar filas.
