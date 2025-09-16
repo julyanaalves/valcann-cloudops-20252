@@ -4,8 +4,9 @@
 
 Este repositório contém a resolução completa do Desafio Técnico para o **Programa de Estágio 2025.2 na área de CloudOps da Valcann**. O projeto demonstra habilidades em automação com Python, diagnóstico de performance de sistemas e arquitetura de pipelines de CI/CD.
 
-As respostas detalhadas, incluindo os diagramas de arquitetura, estão consolidadas no documento final da avaliação:
-* **[VALCANN _ Programa de Estágio 2025.2 (CloudOps) _ Avaliação Técnica _ JULYANA DOS SANTOS ALVES.pdf](./VALCANN _ Programa de Estágio 2025.2 (CloudOps) _ Avaliação Técnica _ JULYANA DOS SANTOS ALVES.pdf)**
+As respostas detalhadas, incluindo os diagramas, estão consolidadas no documento final da avaliação:
+
+**[VALCANN - Programa de Estágio 2025.2 (CloudOps) - Avaliação Técnica - JULYANA DOS SANTOS ALVES.pdf] (./VALCANN - Programa de Estágio 2025.2 (CloudOps) - Avaliação Técnica - JULYANA DOS SANTOS ALVES.pdf)**
 
 ## 🎯 Desafios Resolvidos
 
@@ -19,16 +20,17 @@ O desafio foi dividido em três problemas práticos do dia a dia de um profissio
 
 ### Problema 1: Automação de Ambientes Operacionais
 
-[cite_start]**Resumo do Desafio:** Criar um script para automatizar a rotina de gerenciamento de backups, incluindo listagem, limpeza de arquivos com mais de 3 dias e cópia de arquivos recentes, com a geração de logs. [cite: 46, 397]
+**Resumo do Desafio:** Criar um script para automatizar uma rotina de gerenciamento de backups, incluindo listagem, limpeza de arquivos com mais de 3 dias e cópia de arquivos recentes, com a geração de logs.
 
-[cite_start]**Solução Proposta:** Foi desenvolvido um script Python CLI (Command-Line Interface) robusto, modular e configurável. [cite: 45, 46, 396, 397] Ele não apenas cumpre os requisitos, mas também incorpora boas práticas de engenharia de software.
+**Solução Proposta:** Foi desenvolvido um script Python CLI (Command-Line Interface) robusto, modular e configurável. Ele não apenas cumpre os requisitos, mas também incorpora boas práticas de engenharia de software.
 
-* [cite_start]**Tecnologias:** `Python` [cite: 45, 396][cite_start], `argparse` [cite: 48, 399][cite_start], `pathlib` [cite: 53, 404][cite_start], `shutil`[cite: 50, 401].
-* **Funcionalidades:**
-    * [cite_start]Interface de linha de comando para flexibilidade. [cite: 68, 69, 70, 415, 416]
-    * [cite_start]Modo `--dry-run` para simulação segura das operações. [cite: 79, 422]
-    * [cite_start]Configuração via variáveis de ambiente. [cite: 55, 57, 59, 62, 406, 407, 408, 409]
-    * [cite_start]Código modular e com tipagem estática. [cite: 54, 405]
+**Tecnologias:** `Python`, `argparse`, `pathlib`, `shutil`.
+
+**Funcionalidades:**
+* Interface de linha de comando para flexibilidade.
+* Modo `--dry-run` para simulação segura das operações.
+* Configuração via variáveis de ambiente.
+* Código modular e com tipagem estática.
 
 **Como Executar:**
 (O código-fonte da solução está no arquivo `problem1.py`)
@@ -36,5 +38,52 @@ O desafio foi dividido em três problemas práticos do dia a dia de um profissio
 # Ver todas as opções de execução
 python problem1.py --help
 
+# Ver todas as opções de execução
+python problem1.py --help
+
 # Exemplo de execução em modo de simulação (não altera arquivos)
 python problem1.py --source ./pasta_origem --dest ./pasta_destino --dry-run
+```
+
+
+### Problema 2: Monitoramento e Performance
+
+**Resumo do Desafio:** Diagnosticar a causa raiz da lentidão em uma aplicação web com 4 servidores de aplicação e 2 de banco de dados, onde as métricas básicas de infraestrutura (CPU/memória) não indicam sobrecarga.
+
+
+**Solução Proposta:** Uma análise estruturada (Problema > Causa > Solução) com um plano de diagnóstico end-to-end, que investiga o sistema em quatro camadas críticas para identificar gargalos sutis. A solução inclui a instrumentação da aplicação para obter visibilidade completa, visualizada em um diagrama de arquitetura detalhado.
+
+**Conceitos e Ferramentas:**
+
+* Análise de **Core Web Vitals** e RUM (Real User Monitoring).
+* **APM (Application Performance Monitoring)** com **Distributed Tracing** para identificar latência de cauda longa (p95/p99) e queries N+1.
+* Análise de **Pool de Conexões**, **Locks** e planos de execução de queries no banco de dados.
+* Monitoramento de **Dependências Externas**.
+* Estratégias de mitigação como **Cache (Redis)** e o padrão **Circuit Breaker**.
+
+
+
+### Problema 3: Aplicações e Desenvolvimento de Software (CI/CD)
+
+**Resumo do Desafio:** Automatizar o processo de deploy de uma aplicação Node.js/React, que atualmente é totalmente manual, envolvendo empacotamento, deploy em homologação, uma semana de validação, e um novo deploy manual em produção.
+
+**Solução Proposta:** O desenho de um ecossistema de CI/CD (Continuous Integration/Continuous Deployment) completo e moderno, que aborda a solução em cinco pilares fundamentais para garantir um ciclo de entrega ágil, seguro e confiável. A solução é acompanhada por um diagrama detalhado do fluxo do pipeline.
+
+**Pilares da Solução:**
+1. **Fundação:** Pipeline de CI/CD com Git, GitHub Actions e Docker.
+2. **Qualidade Automatizada:** Integração de testes, linters e análise de segurança no pipeline.
+3. **Consistência de Ambientes:** Uso de Infraestrutura como Código (IaC) com Terraform/Ansible.
+4. **Deploys Seguros:** Implementação de aprovação manual para produção e estratégias como Blue-Green.
+5. **Gerenciamento de Banco de Dados:** Automação das migrações de schema dentro do pipeline.
+
+## 🛠️ Tecnologias e Conceitos Abordados
+* **Linguagens:** Python
+* **DevOps:** CI/CD, Docker, Infraestrutura como Código (IaC), Git
+* **Ferramentas:** GitHub Actions, Nginx, Terraform/Ansible, Prometheus, Grafana, Jaeger
+* **Conceitos de Arquitetura:** Monitoramento, Observabilidade, APM, RUM, Caching (Redis), Padrão Circuit Breaker, Estratégias de Deploy (Blue-Green/Canary)
+* **Bancos de Dados:** Análise de Performance, Migrações de Schema
+
+## 👩‍💻 Autora
+**Julyana dos Santos Alves**
+* **LinkedIn:** https://www.linkedin.com/in/julyana-s-alves 
+* **GitHub:** https://github.com/julyanaalves
